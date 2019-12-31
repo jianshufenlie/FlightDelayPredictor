@@ -55,7 +55,19 @@ config = tf.estimator.RunConfig(model_dir=OUTDIR, tf_random_seed=1, save_checkpo
 model = tf.estimator.DNNRegressor([10,10], feature_columns = feature_columns, config = config)
 
 #8. Train
+tf.logging.set_verbosity(tf.logging.INFO) # print loss during training
+shutil.rmtree(path = OUTDIR, ignore_errors = True) # don't look in OUTDIR for checkpoint files
+
+model.train(
+    input_fn = lambda: train_input_fn(df = df_train), 
+    steps = 500)
+
 #9. Evaluate
+def print_rmse(model, df):
+    metrics = model.evaluate(input_fn = lambda: eval_input_fn(df))
+    print("RMSE on dataset = {}".format(metrics["average_loss"]**.5)) #take sqrt b/c loss is reported as MSE by default
+print_rmse(model = model, df = df_valid)
+
 #10. Predict
 #11. Change Estimator type?
 #12. Summarize Results
